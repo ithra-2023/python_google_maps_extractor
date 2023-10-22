@@ -15,21 +15,44 @@ longitudes = []
 
 # Loop through the URLs in the DataFrame
 for url in df['Google Maps Link']:
+    print(f"Processing: {url}")  # Print the URL being processed
+
     if pd.isna(url):  # Check if the URL is NaN
+        print("Skipping: NaN value")
+        latitudes.append(None)
+        longitudes.append(None)
+        continue  # Skip to the next iteration
+    
+    # Check if the entry is already coordinates
+    match = re.search(r'(-?\d+\.\d+),(-?\d+\.\d+)', str(url))
+    if match:
+        lat, lng = match.groups()
+        print(f"Coordinates found: {lat}, {lng}")
+        latitudes.append(lat)
+        longitudes.append(lng)
+        continue  # Skip to the next iteration
+
+    # Expand short URL
+    # Expand short URL
+    try:
+        full_url = expand_url(url)
+        print(f"Expanded URL: {full_url}")  # Print the expanded URL
+
+    except requests.exceptions.MissingSchema:
+        print("Skipping: Invalid URL")
         latitudes.append(None)
         longitudes.append(None)
         continue  # Skip to the next iteration
 
-    # Expand short URL
-    full_url = expand_url(url)
-    
     # Use regex to extract latitude and longitude
     match = re.search(r'@(-?\d+\.\d+),(-?\d+\.\d+)', full_url)
     if match:
         lat, lng = match.groups()
+        print(f"Extracted coordinates: {lat}, {lng}")
         latitudes.append(lat)
         longitudes.append(lng)
     else:
+        print("No coordinates found")
         latitudes.append(None)
         longitudes.append(None)
 
